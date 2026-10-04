@@ -28,3 +28,10 @@ flutter run --dart-define=WP_BASE_URL=https://VOTRE-SITE-DE-TEST
 ```
 
 Les versions des dépendances seront résolues au premier `flutter pub get` ; conserver alors le fichier `pubspec.lock` obtenu. Les contraintes de versions proposées ne constituent pas une combinaison compilée et validée ici.
+
+## Lot complet avec GitHub Actions
+
+- Ajout de `.github/workflows/build-android.yml` à la racine du ZIP : compilation Android au push sur main et lancement manuel.
+- Ajout des options d'analyse Dart standard et préservation du code, des tests et de ces options lors de la génération des projets natifs.
+- Vérification de la syntaxe YAML, des chemins nécessaires, de la syntaxe Python et de l'intégrité de l'archive.
+- Aucune nouvelle exécution Flutter locale, aucun lancement de GitHub Actions : compilation complète toujours à valider.

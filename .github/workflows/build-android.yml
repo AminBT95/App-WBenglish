@@ -1,0 +1,50 @@
+name: Construire APK Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Recuperer le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Installer Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generer le projet Android et iOS
+        run: python3 scripts/prepare_flutter.py
+
+      - name: Executer les tests Flutter
+        working-directory: flutter
+        run: flutter test
+
+      - name: Compiler APK de test
+        working-directory: flutter
+        run: >
+          flutter build apk --debug
+          --dart-define=WP_BASE_URL=https://wbenglish.deardevice.com
+
+      - name: Mettre APK en telechargement
+        uses: actions/upload-artifact@v4
+        with:
+          name: WB-English-APK-test
+          path: flutter/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7

@@ -9,8 +9,9 @@ root = pathlib.Path(__file__).resolve().parents[1]
 app = root / 'flutter'
 if not shutil.which('flutter'):
     sys.exit('Installez Flutter stable, puis relancez : python3 scripts/prepare_flutter.py')
-# Preserve authored source and manifest: flutter create can rewrite starter files.
-source = {p.relative_to(app): p.read_bytes() for p in [app / 'pubspec.yaml', *sorted((app / 'lib').glob('*.dart'))]}
+# Preserve application code, tests and analysis settings during runner generation.
+paths = [app / 'pubspec.yaml', app / 'analysis_options.yaml', *sorted((app / 'lib').rglob('*.dart')), *sorted((app / 'test').rglob('*.dart'))]
+source = {p.relative_to(app): p.read_bytes() for p in paths if p.is_file()}
 try:
     subprocess.run(['flutter', 'create', '--platforms=android,ios', '--org', 'com.deardevice', '--project-name', 'wbenglish_mobile', '--no-pub', '.'], cwd=app, check=True)
 finally:
