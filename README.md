@@ -1,4 +1,7 @@
-# WB English — prototype complet avec GitHub Actions
+# WB English — prototype 0.2.0 avec quiz
+
+**Nouveau :** réponses de quiz envoyées depuis Flutter et enregistrées dans MasterStudy, avec score calculé côté serveur et relecture du résultat. Commencer par **TEST-QUIZ.md** pour l’installation et le scénario de validation.
+
 
 Ce ZIP regroupe les sources Flutter Android/iOS, le connecteur WordPress, les tests et le workflow qui compile un APK Android de test. Aucun APK ou IPA déjà compilé n'est inclus.
 
@@ -21,7 +24,7 @@ L'automatisation fournie compile l'APK Android de test. Les mêmes sources inclu
 
 ## WordPress
 
-Le plugin installable est dans `wordpress/wbenglish-mobile-bridge.zip`. Si la version 0.1 est déjà installée, il n'est pas nécessaire de la réinstaller : elle est inchangée. Configurer l'ID du compte élève et les IDs de cours, puis créer son mot de passe d'application WordPress. Voir `LISEZ-MOI.md`.
+Le plugin installable est dans `wordpress/wbenglish-mobile-bridge.zip`. Version 0.2.0 : remplacer le connecteur installé puis cocher Envoi des quiz pour ce nouveau test. Configurer l'ID du compte élève et les IDs de cours, puis créer son mot de passe d'application WordPress. Voir `LISEZ-MOI.md`.
 
 ## Validation
 

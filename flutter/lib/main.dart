@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
+import 'quiz.dart';
 
 void main() => runApp(const WBEnglish());
 
@@ -192,7 +193,14 @@ class _DataViewState extends State<DataView> {
         );
       if (!snapshot.hasData)
         return const Center(child: CircularProgressIndicator());
-      return widget.render(snapshot.data!);
+      return RefreshIndicator(
+        onRefresh: () async {
+          final next = widget.load();
+          setState(() => request = next);
+          await next;
+        },
+        child: widget.render(snapshot.data!),
+      );
     },
   );
 }
@@ -298,6 +306,7 @@ class CoursesPage extends StatelessWidget {
 
 IconData typeIcon(String type) => switch (type) {
   'audio' => Icons.headphones,
+  'quiz' => Icons.quiz_outlined,
   'video' => Icons.play_circle_outline,
   'text' => Icons.article_outlined,
   _ => Icons.extension_outlined,
@@ -321,7 +330,7 @@ class CoursePage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const Text(
-            'La progression affichée provient de WordPress. Ce pilote ne la modifie pas.',
+            'La progression provient de WordPress. Valider un quiz enregistre une tentative dans MasterStudy.',
           ),
           const SizedBox(height: 20),
           for (final section in course['sections'] as List) ...[
@@ -356,7 +365,17 @@ class CoursePage extends StatelessWidget {
                   onTap: lesson['locked'] == true
                       ? null
                       : () {
-                          if (lesson['supported'] == true) {
+                          if (lesson['type'] == 'quiz') {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => QuizPage(
+                                  api: api,
+                                  courseId: id,
+                                  quizId: lesson['id'] as int,
+                                ),
+                              ),
+                            );
+                          } else if (lesson['supported'] == true) {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => LessonPage(

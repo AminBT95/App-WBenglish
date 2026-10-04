@@ -1,12 +1,13 @@
 <?php
 /**
  * Plugin Name: WB English Mobile Bridge — pilote
- * Description: API de lecture limitée à un élève et aux cours autorisés, pour le prototype Flutter.
- * Version: 0.1.0
+ * Description: Cours et quiz mobiles limités au compte élève de test et aux cours autorisés.
+ * Version: 0.2.0
  * Requires PHP: 7.4
  * Requires at least: 5.6
  */
 if (!defined('ABSPATH')) { exit; }
+require_once __DIR__ . '/quiz.php';
 
 final class WB_English_Mobile_Bridge {
     const NS = 'wbenglish-mobile/v1';
@@ -31,13 +32,39 @@ final class WB_English_Mobile_Bridge {
         }, 10, 3);
     }
     public static function sanitize_settings($input) {
-        $user_id = absint($input['user_id'] ?? 0);
-        $user = get_user_by('id', $user_id);
-        // Dedicated learner only. Never permit a publishing or administrative account.
-        if (!$user || user_can($user, 'edit_posts') || user_can($user, 'manage_options')) { $user_id = 0; }
-        $ids = preg_split('/[\s,;]+/', (string)($input['course_ids'] ?? ''), -1, PREG_SPLIT_NO_EMPTY);
+        $previous = self::settings();
+        if (!is_array($input)) {
+            add_settings_error(self::OPTION, 'wb_invalid_settings', 'Réglages invalides. Aucun changement enregistré.', 'error');
+            return $previous;
+        }
+        $value = $input['user_id'] ?? '';
+        if (!is_scalar($value)) {
+            add_settings_error(self::OPTION, 'wb_invalid_student', "Saisissez l’ID numérique ou l’identifiant WordPress de l’élève. Aucun changement enregistré.", 'error');
+            return $previous;
+        }
+        $value = trim((string)$value);
+        // Only an explicit zero disables access. Empty/invalid fields must never silently disable it.
+        $user_id = 0;
+        if ($value !== '0') {
+            $user = $value === '' ? false : get_user_by(ctype_digit($value) ? 'id' : 'login', $value);
+            if (!$user) {
+                add_settings_error(self::OPTION, 'wb_student_not_found', "Compte introuvable : utilisez l’ID WordPress (user_id dans la page de modification du compte) ou son identifiant de connexion. Aucun changement enregistré.", 'error');
+                return $previous;
+            }
+            if (user_can($user, 'manage_options') || user_can($user, 'edit_posts')) {
+                add_settings_error(self::OPTION, 'wb_student_privileged', "Ce compte possède des droits d’administration ou d’édition. Choisissez un compte élève dédié sans ces droits. Aucun changement enregistré.", 'error');
+                return $previous;
+            }
+            $user_id = (int)$user->ID;
+        }
+        $course_value = $input['course_ids'] ?? '';
+        if (!is_scalar($course_value)) {
+            add_settings_error(self::OPTION, 'wb_invalid_courses', 'IDs de cours invalides. Aucun changement enregistré.', 'error');
+            return $previous;
+        }
+        $ids = preg_split('/[\s,;]+/', (string)$course_value, -1, PREG_SPLIT_NO_EMPTY);
         $ids = array_slice(array_values(array_unique(array_filter(array_map('absint', $ids)))), 0, 20);
-        return array('user_id' => $user_id, 'course_ids' => implode(',', $ids));
+        return array('user_id' => $user_id, 'course_ids' => implode(',', $ids), 'quiz_write' => !empty($input['quiz_write']) ? 1 : 0);
     }
     private static function settings() { return (array)get_option(self::OPTION, array()); }
     private static function ids() {
@@ -47,22 +74,28 @@ final class WB_English_Mobile_Bridge {
         if (!current_user_can('manage_options')) { return; }
         $s = self::settings();
         ?>
-        <div class="wrap"><h1>WB English Mobile — pilote 0.1</h1>
-        <p>API en lecture seule. Activez d'abord sur une copie de test. Créez un compte élève dédié, inscrivez-le aux cours de test et générez un mot de passe d'application dans son profil WordPress.</p>
+        <div class="wrap"><h1>WB English Mobile — pilote 0.2.0</h1>
+        <p>Lecture des cours et envoi facultatif des quiz. Activez d'abord sur une copie de test. Créez un compte élève dédié, inscrivez-le aux cours de test et générez un mot de passe d'application dans son profil WordPress.</p>
         <p>Seul cet élève peut utiliser cette API. Aucun compte administrateur ou éditeur. Mettre son identifiant à 0 désactive l'accès.</p>
+        <?php settings_errors(self::OPTION); ?>
         <form action="options.php" method="post">
         <?php settings_fields('wbenglish_mobile'); ?>
         <table class="form-table">
-        <tr><th><label for="wb-user">ID numérique de l'élève</label></th><td><input id="wb-user" type="number" min="0" name="<?php echo esc_attr(self::OPTION); ?>[user_id]" value="<?php echo esc_attr($s['user_id'] ?? 0); ?>"></td></tr>
+        <tr><th><label for="wb-user">Élève : ID ou identifiant WordPress</label></th><td><input id="wb-user" type="text" class="regular-text" name="<?php echo esc_attr(self::OPTION); ?>[user_id]" value="<?php echo esc_attr($s['user_id'] ?? 0); ?>"><p class="description">Saisissez son ID numérique ou son identifiant de connexion (pas son nom affiché). Saisir 0 désactive l’accès.</p>
+        <?php $selected = get_user_by('id', (int)($s['user_id'] ?? 0)); if ($selected) { ?>
+        <p><strong>Compte enregistré :</strong> <?php echo esc_html($selected->user_login); ?> — ID <?php echo esc_html((string)$selected->ID); ?> — rôles : <?php echo esc_html(implode(', ', $selected->roles)); ?></p>
+        <?php } else { ?><p>Aucun élève configuré : accès désactivé.</p><?php } ?></td></tr>
         <tr><th><label for="wb-courses">IDs des cours autorisés</label></th><td><input id="wb-courses" class="regular-text" name="<?php echo esc_attr(self::OPTION); ?>[course_ids]" value="<?php echo esc_attr($s['course_ids'] ?? ''); ?>"><p class="description">Exemple : 123,456. Maximum 20. Inscription existante obligatoire.</p></td></tr>
+        <tr><th>Envoi des quiz</th><td><label><input type="checkbox" name="<?php echo esc_attr(self::OPTION); ?>[quiz_write]" value="1" <?php checked(!empty($s['quiz_write'])); ?>> Autoriser l’enregistrement des réponses et scores du compte élève de test dans MasterStudy.</label><p class="description">Pour ce pilote : QCM texte, choix multiples et vrai/faux, sans chronomètre ni tirage aléatoire. Utiliser un cours de test.</p></td></tr>
         </table><?php submit_button(); ?></form>
         <p>Pour ce premier pilote, les cours à durée limitée, à abonnement ou « bientôt disponibles » sont bloqués. Les règles de déblocage progressif MasterStudy sont contrôlées avant la lecture des leçons.</p>
         <p>État : <code><?php echo esc_html(rest_url(self::NS . '/status')); ?></code></p></div>
         <?php
     }
     public static function routes() {
+        WB_English_Mobile_Quiz::routes();
         register_rest_route(self::NS, '/status', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => function () {
-            return array('bridge' => '0.1.0', 'mode' => 'read-only-pilot');
+            return array('bridge' => '0.2.0', 'mode' => 'quiz-pilot');
         }));
         foreach (array('/courses' => 'courses', '/courses/(?P<id>\d+)' => 'course', '/courses/(?P<id>\d+)/lessons/(?P<lesson>\d+)' => 'lesson') as $route => $method) {
             register_rest_route(self::NS, $route, array('methods' => 'GET', 'permission_callback' => array(__CLASS__, 'permission'), 'callback' => array(__CLASS__, $method)));
@@ -81,7 +114,7 @@ final class WB_English_Mobile_Bridge {
         }
         return true;
     }
-    private static function access($id, $lesson = 0) {
+    public static function access($id, $lesson = 0) {
         $post = get_post($id);
         if (!in_array($id, self::ids(), true) || !$post || $post->post_type !== 'stm-courses' || $post->post_status !== 'publish' || $post->post_password) {
             return self::error('Cours non disponible dans ce pilote.', 404);
@@ -130,8 +163,9 @@ final class WB_English_Mobile_Bridge {
             foreach ($section['materials'] as $material) {
                 $pid = (int)$material['post_id']; $post = get_post($pid);
                 if (!$post || $post->post_status !== 'publish' || $post->post_password) { continue; }
-                $supported = $post->post_type === 'stm-lessons';
-                $items[] = array('id' => $pid, 'title' => $material['title'], 'type' => $supported ? $material['lesson_type'] : 'activity',
+                $is_quiz = $post->post_type === 'stm-quizzes';
+                $supported = $post->post_type === 'stm-lessons' || $is_quiz;
+                $items[] = array('id' => $pid, 'title' => $material['title'], 'type' => $is_quiz ? 'quiz' : ($supported ? $material['lesson_type'] : 'activity'),
                     'supported' => $supported, 'locked' => $supported && is_wp_error(self::access($id, $pid)),
                     'completed' => $supported && (bool)STM_LMS_Lesson::is_lesson_completed(get_current_user_id(), $id, $pid));
             }

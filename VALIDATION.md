@@ -35,3 +35,16 @@ Les versions des dépendances seront résolues au premier `flutter pub get` ; co
 - Ajout des options d'analyse Dart standard et préservation du code, des tests et de ces options lors de la génération des projets natifs.
 - Vérification de la syntaxe YAML, des chemins nécessaires, de la syntaxe Python et de l'intégrité de l'archive.
 - Aucune nouvelle exécution Flutter locale, aucun lancement de GitHub Actions : compilation complète toujours à valider.
+
+## Connecteur 0.1.1
+
+Le compte élève peut être renseigné par ID ou identifiant WordPress. Les comptes introuvables ou privilégiés sont refusés avec une explication et les réglages précédents sont conservés. Aucun contrôle d’accès n’a été supprimé. Les 12 tests d’accès et 9 tests isolés de validation des réglages réussissent. Le test d’intégration sur le site reste à effectuer.
+
+## Version 0.2.0 — quiz
+
+- 17 tests isolés du quiz réussis avec la vraie classe STM_LMS_Quiz du plugin fourni et une simulation des transactions WordPress : notation, anti-doublon, réponses invalides, refus d'accès, annulation d'écriture partielle, changement du quiz, limites de tentatives.
+- 12 tests d'accès existants et 9 tests de réglages repassés avec succès.
+- Syntaxe PHP des deux fichiers du connecteur validée. Sources et nouveaux tests Dart parsés et formatés hors ligne.
+- Deux tests de widgets ajoutés au workflow de compilation : formulaire incomplet refusé, conservation de l'identifiant au nouvel envoi et résultat issu du serveur. Leur exécution dépend du prochain build GitHub.
+- Aucun envoi de quiz effectué sur le site réel, aucun APK de cette version compilé ici.
+- Exécuter les tests de quiz avec `php tests/quiz_submission.php /chemin/masterstudy-lms-learning-management-system`. Les sources tierces MasterStudy ne sont pas incluses dans cette archive.

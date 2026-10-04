@@ -30,7 +30,14 @@ class Api {
   }
 
   void logout() => _authorization = null;
-  Future<Map<String, dynamic>> get(String route) async {
+  Future<Map<String, dynamic>> get(String route) => _request('GET', route);
+  Future<Map<String, dynamic>> post(String route, Map<String, dynamic> body) =>
+      _request('POST', route, body);
+  Future<Map<String, dynamic>> _request(
+    String method,
+    String route, [
+    Map<String, dynamic>? body,
+  ]) async {
     if (origin.scheme != 'https' ||
         origin.host.isEmpty ||
         origin.userInfo.isNotEmpty ||
@@ -44,7 +51,8 @@ class Api {
       ..connectionTimeout = const Duration(seconds: 15);
     try {
       final base = origin.toString().replaceFirst(RegExp(r'/+$'), '');
-      final req = await client.getUrl(
+      final req = await client.openUrl(
+        method,
         Uri.parse('$base/wp-json/wbenglish-mobile/v1$route'),
       );
       req.followRedirects =
@@ -52,6 +60,10 @@ class Api {
       req.headers.set(HttpHeaders.acceptHeader, 'application/json');
       if (_authorization != null)
         req.headers.set(HttpHeaders.authorizationHeader, _authorization!);
+      if (body != null) {
+        req.headers.contentType = ContentType.json;
+        req.write(jsonEncode(body));
+      }
       final response = await req.close().timeout(const Duration(seconds: 20));
       final bytes = <int>[];
       await for (final chunk in response.timeout(const Duration(seconds: 20))) {

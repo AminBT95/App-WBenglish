@@ -1,4 +1,4 @@
-# WB English — pilote mobile 0.1
+# WB English — pilote mobile 0.2.0
 
 Ce dossier contient un premier prototype Flutter destiné à Android et iOS et un plugin de connexion séparé pour WordPress. Il utilise les cours et inscriptions MasterStudy existants. Ce n'est pas une application prête à publier.
 
@@ -11,7 +11,7 @@ Ce dossier contient un premier prototype Flutter destiné à Android et iOS et u
 - Lecture, pause et déplacement dans le média. L'audio se met en pause lorsque l'application passe en arrière-plan.
 - Ouverture du site pour les activités non prises en charge. Le navigateur peut demander une connexion distincte.
 
-La connexion normale des clients, les inscriptions, achats, quiz natifs, notifications, téléchargement hors ligne, audio en arrière-plan et écriture de progression ne sont pas réalisés dans cette version. Les leçons audio intégrées via iframe/shortcode et les lecteurs vidéo YouTube/Vimeo/DRM nécessitent une intégration supplémentaire. Les images, tableaux et mises en forme du texte ne sont pas encore reproduits.
+Les quiz natifs simples et leur enregistrement sont désormais disponibles : voir TEST-QUIZ.md. La connexion normale des clients, les inscriptions, achats, notifications, téléchargement hors ligne, audio en arrière-plan ne sont pas réalisés dans cette version. Les leçons audio intégrées via iframe/shortcode et les lecteurs vidéo YouTube/Vimeo/DRM nécessitent une intégration supplémentaire. Les images, tableaux et mises en forme du texte ne sont pas encore reproduits.
 
 ## 1. Préparer WordPress
 
@@ -22,11 +22,11 @@ Commencer sur une copie de test du site, avec des cours de démonstration. Le co
 3. Relever l'ID numérique de l'élève dans l'URL de son édition (`user_id=…`) et celui du cours (`post=…`).
 4. Dans **Réglages → WB English Mobile**, saisir cet ID élève et les IDs des cours autorisés, séparés par des virgules ; enregistrer.
 5. Dans le profil WordPress de cet élève, créer un **mot de passe d'application**, nommé par exemple « WB English pilote ». Le conserver localement pour la saisie dans l'app. Ne pas envoyer de mot de passe administrateur dans la conversation.
-6. Vérifier dans le navigateur : `https://VOTRE-SITE/wp-json/wbenglish-mobile/v1/status`. Une réponse JSON avec `bridge: 0.1.0` doit apparaître.
+6. Vérifier dans le navigateur : `https://VOTRE-SITE/wp-json/wbenglish-mobile/v1/status`. Une réponse JSON avec `bridge: 0.2.0` doit apparaître.
 
 Le pilote est désactivé tant qu'aucun élève n'est sélectionné. Il n'accorde aucune inscription. Il refuse les cours privés, protégés par mot de passe, à durée limitée ou « bientôt disponibles ». Les abonnements ne sont pas couverts : si le système d'abonnement est actif, ce pilote peut bloquer tous les cours. Ne pas désactiver les protections commerciales du site de production pour contourner ce refus.
 
-Le connecteur appelle le contrôle d'accès MasterStudy avec l'auto-inscription désactivée et vérifie les règles de déblocage des leçons. Des extensions personnalisées peuvent imposer d'autres règles : à vérifier avant utilisation réelle. Il ne modifie ni les fichiers MasterStudy, ni les cours, ni la progression. WordPress peut mettre à jour ses traces d'utilisation des mots de passe d'application.
+Le connecteur appelle le contrôle d'accès MasterStudy avec l'auto-inscription désactivée et vérifie les règles de déblocage des leçons. Des extensions personnalisées peuvent imposer d'autres règles : à vérifier avant utilisation réelle. Il ne modifie pas les fichiers MasterStudy ni le contenu des cours. Lorsque Envoi des quiz est activé, la validation enregistre les réponses, le score et met à jour la progression de l’élève. WordPress peut mettre à jour ses traces d'utilisation des mots de passe d'application.
 
 Si le serveur renvoie 401 malgré des identifiants corrects, vérifier que l'hébergement transmet l'en-tête `Authorization`, que les mots de passe d'application sont activés et que HTTPS est correctement reconnu par WordPress derrière son proxy. Ne pas désactiver globalement le pare-feu ni la vérification TLS.
 
@@ -88,7 +88,7 @@ Les fichiers de média déjà chargés peuvent rester lisibles dans le lecteur j
 
 ## API fournie
 
-Toutes les routes sont en GET sous `/wp-json/wbenglish-mobile/v1` :
+Les routes de lecture sont en GET sous `/wp-json/wbenglish-mobile/v1` :
 
 | Route | Usage |
 |---|---|
@@ -96,6 +96,8 @@ Toutes les routes sont en GET sous `/wp-json/wbenglish-mobile/v1` :
 | `/courses` | Cours de l'élève autorisé |
 | `/courses/123` | Programme d'un cours autorisé |
 | `/courses/123/lessons/456` | Contenu d'une leçon accessible de ce cours |
+
+La version 0.2 ajoute GET `/courses/123/quizzes/456` et POST `/courses/123/quizzes/456/submit` ; voir TEST-QUIZ.md.
 
 L'authentification est gérée par WordPress via ses mots de passe d'application sur HTTPS. Aucun nouvel algorithme de mot de passe ou contournement de connexion n'est ajouté.
 
