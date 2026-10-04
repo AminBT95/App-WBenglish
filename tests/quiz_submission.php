@@ -7,7 +7,7 @@ namespace MasterStudy\Lms\Repositories {
 }
 namespace {
     define('ABSPATH', '/test/');
-    function add_action() {} function do_action() { $GLOBALS['hooks']++; }
+    function add_action() {} function do_action($name, ...$args) { $GLOBALS['hooks']++; if ($name === 'masterstudy_lms_user_quiz_added' && !empty($GLOBALS['grades_enabled'])) { $GLOBALS['grade_updates']++; $GLOBALS['grade_percent'] = $args[0]['progress']; } }
     function wp_strip_all_tags($s) { return strip_tags($s); } function strip_shortcodes($s) { return $s; }
     function wp_json_encode($x) { return json_encode($x); }
     function wp_hash($x,$scheme) { return hash_hmac('sha256',$x,'test-key'); }
@@ -22,7 +22,7 @@ namespace {
     function current_time($s) { return '2026-10-04 18:00:00'; }
     function get_post($id) { return (object)array('post_type'=>$id===500?'stm-quizzes':'stm-questions','post_status'=>'publish','post_password'=>'','post_title'=>'Question '.$id,'post_content'=>''); }
     function get_post_meta($id,$key,$single=true) { return $GLOBALS['meta'][$id][$key] ?? ''; }
-    function is_ms_lms_addon_enabled($addon) { return false; }
+    function is_ms_lms_addon_enabled($addon) { return $addon === 'grades' && !empty($GLOBALS['grades_enabled']); }
     function masterstudy_lms_user_can_write_course_progress($uid,$cid) { return $GLOBALS['access']; }
     function stm_lms_user_answers_name($db) { return 'answers'; }
     function stm_lms_user_quizzes_name($db) { return 'quizzes'; }
@@ -75,7 +75,7 @@ namespace {
     require $plugin.'/_core/lms/classes/quiz.php';
     require __DIR__.'/../wordpress/wbenglish-mobile-bridge/quiz.php';
     function reset_fixture() {
-        $GLOBALS['wpdb']=new FakeDB(); $GLOBALS['write']=true; $GLOBALS['access']=true; $GLOBALS['hooks']=0; $GLOBALS['progress_updates']=0;
+        $GLOBALS['grades_enabled']=false; $GLOBALS['grade_updates']=0; $GLOBALS['wpdb']=new FakeDB(); $GLOBALS['write']=true; $GLOBALS['access']=true; $GLOBALS['hooks']=0; $GLOBALS['progress_updates']=0;
         $GLOBALS['quiz']=array('title'=>'Quiz de test','questions'=>array(501,502,503),'quiz_attempts'=>'unlimited','attempts'=>null,
             'passing_grade'=>60,'re_take_cut'=>0,'retry_after_passing'=>true);
         $GLOBALS['meta']=array(
@@ -125,5 +125,13 @@ namespace {
     expect(WB_English_Mobile_Quiz::read(new Request())['can_submit']===false,'Attempt limit applied');
     reset_fixture(); $p=payload(); WB_English_Mobile_Quiz::submit(new Request($p)); $GLOBALS['quiz']['retry_after_passing']=false;
     expect(WB_English_Mobile_Quiz::read(new Request())['can_submit']===false,'Retry after passing rule applied');
+    reset_fixture(); $GLOBALS['grades_enabled']=true; $p=payload(); $r=WB_English_Mobile_Quiz::submit(new Request($p));
+    expect(!is_wp_error($r) && $r['score']===100 && $GLOBALS['grade_updates']===1 && $GLOBALS['grade_percent']===100,'Grades enabled: percentage stored and native grade hook receives score');
+    reset_fixture(); $GLOBALS['quiz']['required_answers_ids']='[]';
+    expect(!is_wp_error(WB_English_Mobile_Quiz::read(new Request())),'Empty JSON list of required questions accepted');
+    reset_fixture(); $GLOBALS['quiz']['required_answers_ids']=array(501);
+    expect(is_wp_error(WB_English_Mobile_Quiz::read(new Request())),'Actual required question remains blocked');
+    reset_fixture(); $GLOBALS['quiz']['random_answers']=true;
+    expect(is_wp_error(WB_English_Mobile_Quiz::read(new Request())),'Randomized answers produce a specific refusal');
     echo "$count quiz checks passed.\n";
 }

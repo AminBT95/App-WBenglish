@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
 import 'quiz.dart';
+import 'words.dart';
 
 void main() => runApp(const WBEnglish());
 
@@ -239,6 +240,20 @@ class CoursesPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text('Retrouvez les cours autorisés pour ce premier test.'),
+            const SizedBox(height: 16),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.mic_none),
+                title: const Text('Mot du jour'),
+                subtitle: const Text(
+                  'Parler, envoyer et recevoir une correction',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => WordsPage(api: api))),
+              ),
+            ),
             const SizedBox(height: 24),
             if (courses.isEmpty)
               const Card(

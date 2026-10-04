@@ -4,7 +4,8 @@ import 'dart:io';
 
 class ApiFailure implements Exception {
   final String message;
-  ApiFailure(this.message);
+  final int? statusCode;
+  ApiFailure(this.message, {this.statusCode});
   @override
   String toString() => message;
 }
@@ -89,6 +90,7 @@ class Api {
           data['message'] is String
               ? data['message'] as String
               : 'Accès refusé (${response.statusCode}).',
+          statusCode: response.statusCode,
         );
       }
       return data;

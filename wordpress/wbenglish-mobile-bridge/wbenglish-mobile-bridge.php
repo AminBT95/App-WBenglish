@@ -2,12 +2,13 @@
 /**
  * Plugin Name: WB English Mobile Bridge — pilote
  * Description: Cours et quiz mobiles limités au compte élève de test et aux cours autorisés.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires PHP: 7.4
  * Requires at least: 5.6
  */
 if (!defined('ABSPATH')) { exit; }
 require_once __DIR__ . '/quiz.php';
+require_once __DIR__ . '/words.php';
 
 final class WB_English_Mobile_Bridge {
     const NS = 'wbenglish-mobile/v1';
@@ -74,7 +75,7 @@ final class WB_English_Mobile_Bridge {
         if (!current_user_can('manage_options')) { return; }
         $s = self::settings();
         ?>
-        <div class="wrap"><h1>WB English Mobile — pilote 0.2.0</h1>
+        <div class="wrap"><h1>WB English Mobile — pilote 0.3.0</h1>
         <p>Lecture des cours et envoi facultatif des quiz. Activez d'abord sur une copie de test. Créez un compte élève dédié, inscrivez-le aux cours de test et générez un mot de passe d'application dans son profil WordPress.</p>
         <p>Seul cet élève peut utiliser cette API. Aucun compte administrateur ou éditeur. Mettre son identifiant à 0 désactive l'accès.</p>
         <?php settings_errors(self::OPTION); ?>
@@ -94,8 +95,9 @@ final class WB_English_Mobile_Bridge {
     }
     public static function routes() {
         WB_English_Mobile_Quiz::routes();
+        WB_English_Words::routes();
         register_rest_route(self::NS, '/status', array('methods' => 'GET', 'permission_callback' => '__return_true', 'callback' => function () {
-            return array('bridge' => '0.2.0', 'mode' => 'quiz-pilot');
+            return array('bridge' => '0.3.0', 'mode' => 'words-and-quiz-pilot');
         }));
         foreach (array('/courses' => 'courses', '/courses/(?P<id>\d+)' => 'course', '/courses/(?P<id>\d+)/lessons/(?P<lesson>\d+)' => 'lesson') as $route => $method) {
             register_rest_route(self::NS, $route, array('methods' => 'GET', 'permission_callback' => array(__CLASS__, 'permission'), 'callback' => array(__CLASS__, $method)));

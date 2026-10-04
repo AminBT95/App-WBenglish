@@ -1,6 +1,8 @@
-# WB English — pilote mobile 0.2.0
+# WB English — pilote mobile 0.3.0
 
 Ce dossier contient un premier prototype Flutter destiné à Android et iOS et un plugin de connexion séparé pour WordPress. Il utilise les cours et inscriptions MasterStudy existants. Ce n'est pas une application prête à publier.
+
+Le nouveau module oral est expliqué dans **TEST-MOT-DU-JOUR.md** : publication, enregistrement de plusieurs phrases et correction texte/audio.
 
 ## Ce que contient ce premier test
 
@@ -22,7 +24,7 @@ Commencer sur une copie de test du site, avec des cours de démonstration. Le co
 3. Relever l'ID numérique de l'élève dans l'URL de son édition (`user_id=…`) et celui du cours (`post=…`).
 4. Dans **Réglages → WB English Mobile**, saisir cet ID élève et les IDs des cours autorisés, séparés par des virgules ; enregistrer.
 5. Dans le profil WordPress de cet élève, créer un **mot de passe d'application**, nommé par exemple « WB English pilote ». Le conserver localement pour la saisie dans l'app. Ne pas envoyer de mot de passe administrateur dans la conversation.
-6. Vérifier dans le navigateur : `https://VOTRE-SITE/wp-json/wbenglish-mobile/v1/status`. Une réponse JSON avec `bridge: 0.2.0` doit apparaître.
+6. Vérifier dans le navigateur : `https://VOTRE-SITE/wp-json/wbenglish-mobile/v1/status`. Une réponse JSON avec `bridge: 0.3.0` doit apparaître.
 
 Le pilote est désactivé tant qu'aucun élève n'est sélectionné. Il n'accorde aucune inscription. Il refuse les cours privés, protégés par mot de passe, à durée limitée ou « bientôt disponibles ». Les abonnements ne sont pas couverts : si le système d'abonnement est actif, ce pilote peut bloquer tous les cours. Ne pas désactiver les protections commerciales du site de production pour contourner ce refus.
 

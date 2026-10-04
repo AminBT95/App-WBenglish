@@ -38,10 +38,24 @@ final class WB_English_Mobile_Quiz {
     private static function schema($course, $quiz) {
         $q = (new \MasterStudy\Lms\Repositories\QuizRepository())->get($quiz);
         if (!$q) { return self::error('Quiz introuvable.', 404); }
-        if (STM_LMS_Quiz::get_quiz_duration($quiz) > 0 || !empty($q['random_questions']) || !empty($q['random_answers']) || !empty($q['required_answers_ids']) ||
-            (function_exists('is_ms_lms_addon_enabled') && is_ms_lms_addon_enabled('grades'))) {
-            return self::error('Pour ce test, choisir un quiz sans chronomètre, tirage aléatoire, questions obligatoires spécifiques ou module Grades.');
+        if (STM_LMS_Quiz::get_quiz_duration($quiz) > 0) {
+            return self::error('Le chronomètre de ce quiz est actif. Pour ce pilote, vider « Quiz duration », enregistrer puis rouvrir le quiz.');
         }
+        if (!empty($q['random_questions'])) {
+            return self::error('Désactiver « Randomize questions » pour ce quiz de test, puis enregistrer.');
+        }
+        if (!empty($q['random_answers'])) {
+            return self::error('Désactiver « Randomize answers » pour ce quiz de test, puis enregistrer.');
+        }
+        $required = $q['required_answers_ids'] ?? array();
+        // Empty list may be returned as JSON text by migrated installations.
+        if (is_string($required) && trim($required) === '[]') { $required = array(); }
+        if (!empty($required)) {
+            return self::error('Au moins une question est marquée « Required Question ». Désactiver cette option sur toutes les questions du quiz de test, puis enregistrer.');
+        }
+        // Grades uses the native percentage stored in user_quizzes. Its existing
+        // masterstudy_lms_user_quiz_added hook recalculates the course grade.
+        // Keep the score as a percentage; never treat grade labels as thresholds.
         $ids = array_values(array_unique(array_filter(array_map('absint', $q['questions'] ?? array()))));
         if (!$ids || count($ids) > 50) { return self::error('Le quiz de test doit contenir entre 1 et 50 questions.'); }
         $questions = array();

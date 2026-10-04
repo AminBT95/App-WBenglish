@@ -1,3 +1,25 @@
+# Validation du module Mot du jour — 0.3.0
+
+- 24 contrôles PHP isolés passés : validation réelle WAV avec le parseur getID3 de WordPress, durée/taille, fichiers invalides, accès au cours, isolation entre élèves, retour texte/audio, doublons, verrou concurrent, mots futurs et droits du formateur.
+- Un M4A AAC généré pour le test a également été accepté par le parseur réel, format utilisé par l’app.
+- 21 contrôles accès/réglages et 21 contrôles quiz existants passent toujours.
+- Syntaxe PHP/JavaScript vérifiée ; sources Dart formatées et analysées syntaxiquement par le formateur Dart. Cela ne remplace pas `flutter analyze` ni une compilation.
+- Script de préparation Python contrôlé ; le workflow GitHub exécute l’analyse Flutter, les tests puis la compilation APK.
+- Aucun envoi vers votre WordPress effectué ici. Microphones, écrans formateur en navigateur, téléphones Android/iOS et compilation restent à tester avec ce lot.
+- Sources Flutter Android/iOS incluses. Aucun APK/IPA compilé, aucune soumission aux boutiques.
+
+Test PHP du module avec un dossier WordPress accessible localement :
+
+```sh
+php tests/words_submission.php /chemin/vers/wordpress
+```
+
+Le test emploie des doubles de WordPress pour les permissions et la persistance, et son vrai analyseur de fichiers audio pour la validation. Il ne crée aucun contenu dans une installation réelle et ne remplace pas un test d’intégration. Les tests de quiz nécessitent le code MasterStudy fourni séparément.
+
+---
+
+Historique des validations précédentes :
+
 # État de validation — 4 octobre 2026
 
 ## Réalisé
@@ -48,3 +70,7 @@ Le compte élève peut être renseigné par ID ou identifiant WordPress. Les com
 - Deux tests de widgets ajoutés au workflow de compilation : formulaire incomplet refusé, conservation de l'identifiant au nouvel envoi et résultat issu du serveur. Leur exécution dépend du prochain build GitHub.
 - Aucun envoi de quiz effectué sur le site réel, aucun APK de cette version compilé ici.
 - Exécuter les tests de quiz avec `php tests/quiz_submission.php /chemin/masterstudy-lms-learning-management-system`. Les sources tierces MasterStudy ne sont pas incluses dans cette archive.
+
+## Correctif connecteur 0.2.1
+
+Suppression du refus global lorsque Grades est actif : les tables de tentatives conservent des pourcentages et le hook natif MasterStudy de recalcul de la note était déjà déclenché après enregistrement. L’app continue d’afficher un pourcentage. Refus distincts pour chronomètre, ordre aléatoire et questions obligatoires. Tolérance du tableau vide de questions obligatoires encodé en JSON. Les 21 tests isolés de quiz passent, dont le chemin avec Grades activé et la transmission du score au hook simulé. L’intégration réelle de Grades sur le site reste à vérifier. Pas de changement de source Flutter ni besoin de recompiler l’APK 0.2.0.

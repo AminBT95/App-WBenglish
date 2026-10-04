@@ -1,6 +1,6 @@
-# WB English — prototype 0.2.0 avec quiz
+# WB English — prototype 0.3.0 avec Mot du jour
 
-**Nouveau :** réponses de quiz envoyées depuis Flutter et enregistrées dans MasterStudy, avec score calculé côté serveur et relecture du résultat. Commencer par **TEST-QUIZ.md** pour l’installation et le scénario de validation.
+**Nouveau :** mot publié dans WordPress, 1 à 3 audios enregistrés par l’élève, correction texte et/ou audio par le formateur, retour consultable dans l’app. Commencer par **TEST-MOT-DU-JOUR.md**. Les cours et quiz restent inclus ; leur test est décrit dans **TEST-QUIZ.md**.
 
 
 Ce ZIP regroupe les sources Flutter Android/iOS, le connecteur WordPress, les tests et le workflow qui compile un APK Android de test. Aucun APK ou IPA déjà compilé n'est inclus.
@@ -24,7 +24,7 @@ L'automatisation fournie compile l'APK Android de test. Les mêmes sources inclu
 
 ## WordPress
 
-Le plugin installable est dans `wordpress/wbenglish-mobile-bridge.zip`. Version 0.2.0 : remplacer le connecteur installé puis cocher Envoi des quiz pour ce nouveau test. Configurer l'ID du compte élève et les IDs de cours, puis créer son mot de passe d'application WordPress. Voir `LISEZ-MOI.md`.
+Le plugin installable est dans `wordpress/wbenglish-mobile-bridge.zip`. Version 0.3.0 du connecteur : Mot du jour ajouté, compatibilité Grades des quiz conservée. Remplacer le connecteur installé. Le menu **WB — Mot du jour** permet de publier et corriger. Le réglage **Envoi des quiz** concerne uniquement les quiz. Configurer l'ID du compte élève et les IDs de cours, puis créer son mot de passe d'application WordPress. Voir `LISEZ-MOI.md`.
 
 ## Validation
 

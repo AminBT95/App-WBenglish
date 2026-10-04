@@ -1,8 +1,8 @@
-# Test aller-retour app → WordPress → app — version 0.2.0
+# Test aller-retour app → WordPress → app — connecteur 0.2.1
 
 ## Installation
 
-1. Remplacer le plugin WordPress par `wbenglish-mobile-bridge.zip` version **0.2.0**.
+1. Remplacer le plugin WordPress par `wbenglish-mobile-bridge.zip` version **0.2.1**.
 2. Dans Réglages → WB English Mobile, garder le même compte élève et le même cours autorisé. Cocher **Envoi des quiz**, puis enregistrer.
 3. Mettre le contenu du ZIP complet à la racine du dépôt GitHub, y compris `.github`, et pousser sur `main`.
 4. Dans GitHub Actions, attendre la réussite de la nouvelle compilation, télécharger `WB-English-APK-test`, puis installer le nouvel APK. La version de l'app est **0.2.0+2**. Le mot de passe d'application WordPress reste le même.
@@ -16,7 +16,7 @@ Créer un quiz dans le programme d'un **cours de test**, auquel le compte élèv
 - Aucun chronomètre ; aucun ordre aléatoire des questions ou réponses.
 - Pas de banque de questions, H5P, questions à images ou questions obligatoires spécifiques.
 - Pour faciliter les essais : tentatives illimitées, reprise après réussite autorisée et pénalité de reprise à **0 %**.
-- Publier le quiz et ses questions. Ne pas activer le module Grades pour ce scénario ; s'il est déjà actif sur le site réel, utiliser une copie de test adaptée plutôt que modifier les règles des vrais élèves.
+- Publier le quiz et ses questions. Le module Grades peut rester actif. Le score du quiz reste enregistré en pourcentage ; son hook natif recalcule la note du cours. La conversion en lettre/points n’est pas affichée dans l’app.
 
 | Question | Type | Propositions | Bonne réponse |
 |---|---|---|---|
@@ -50,4 +50,4 @@ Le bouton **Réessayer le même envoi** conserve le même identifiant de requêt
 - Une modification du quiz pendant sa saisie oblige à rouvrir le formulaire.
 - Les tables MasterStudy des réponses et tentatives et la table WordPress des options doivent utiliser InnoDB. Une transaction enregistre ensemble les réponses, le score et le reçu du dernier envoi. Le serveur doit autoriser les verrous MySQL `GET_LOCK` et la consultation du moteur des tables. Le pilote refuse l'écriture si ces conditions ne sont pas réunies.
 - Le reçu du dernier envoi est conservé dans une option non chargée automatiquement, propre au compte/cours/quiz. Il ne contient aucun mot de passe.
-- Les 17 tests isolés du quiz passent avec la vraie classe de notation fournie dans MasterStudy. La base WordPress est simulée dans ces tests ; le test d'intégration réel reste celui décrit ci-dessus.
+- Les 21 tests isolés du quiz passent avec la vraie classe de notation fournie dans MasterStudy. La base WordPress est simulée dans ces tests ; le test d'intégration réel reste celui décrit ci-dessus.
