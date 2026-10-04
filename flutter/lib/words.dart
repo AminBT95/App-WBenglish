@@ -156,7 +156,8 @@ class _WordPracticeState extends State<WordPractice>
   Future<void> initialize() async {
     try {
       final dir = await getTemporaryDirectory();
-      final own = await Directory('${dir.path}/wb_word_').createTemp();
+      await dir.create(recursive: true);
+      final own = await dir.createTemp('wb_word_');
       if (!mounted) {
         await own.delete(recursive: true);
         return;

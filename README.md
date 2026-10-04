@@ -1,4 +1,6 @@
-# WB English — prototype 0.3.0 avec Mot du jour
+# WB English — prototype 0.3.1 avec Mot du jour
+
+**Correctif mobile 0.3.1 :** création du dossier temporaire audio corrigée (PathNotFoundException). Recompiler et installer le nouvel APK. Le plugin WordPress reste en version 0.3.0 et ne nécessite pas de remplacement.
 
 **Nouveau :** mot publié dans WordPress, 1 à 3 audios enregistrés par l’élève, correction texte et/ou audio par le formateur, retour consultable dans l’app. Commencer par **TEST-MOT-DU-JOUR.md**. Les cours et quiz restent inclus ; leur test est décrit dans **TEST-QUIZ.md**.
 

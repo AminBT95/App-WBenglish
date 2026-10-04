@@ -1,3 +1,7 @@
+# Correctif mobile 0.3.1
+
+La création du dossier audio utilise maintenant le répertoire cache existant comme parent et `wb_word_` comme préfixe. Le parent est créé récursivement si nécessaire. Vérification exécutée avec le runtime Dart local : reproduction de l’erreur précédente, création réussie avec le correctif et suppression du dossier privé sans suppression du cache parent. Compilation APK et test Android à effectuer sur GitHub et appareil. Plugin WordPress inchangé (0.3.0).
+
 # Validation du module Mot du jour — 0.3.0
 
 - 24 contrôles PHP isolés passés : validation réelle WAV avec le parseur getID3 de WordPress, durée/taille, fichiers invalides, accès au cours, isolation entre élèves, retour texte/audio, doublons, verrou concurrent, mots futurs et droits du formateur.
